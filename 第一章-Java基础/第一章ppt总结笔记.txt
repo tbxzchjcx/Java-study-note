@@ -1,0 +1,329 @@
+第1章 Java语言基础知识 完整总结
+
+1.1 Java语言与面向对象的程序设计
+
+1.1.1 面向对象的程序设计思想
+
+核心思想：将客观事物看作具有状态和行为的对象，通过抽象找出同一类对象的共同状态和行为，构成类。
+
+示例：构建一个Car类，提取所有汽车对象的共有状态（如颜色编号、车门数、速度）用变量表示，行为（如刹车、加速、减速）用方法表示。
+
+class Car {
+    int color_number;
+    int door_number;
+    int speed;
+    void brake() { ... }
+    void speedUp() { ... }
+    void slowDown() { ... }
+}
+
+1.1.2 Java语言的特点
+
+面向对象：Java是一种纯面向对象的语言。
+
+安全性：
+- 不支持指针，避免内存非法访问。
+- 内部安全机制（类加载器、字节码校验器等）。
+
+平台无关性：
+- 源代码编译为字节码（Bytecode），字节码运行在Java虚拟机（JVM）上，JVM屏蔽了底层硬件和操作系统的差异，实现“一次编写，各处运行”。
+
+多线程：Java是第一个在语言级内置支持多线程的高级语言。
+
+内存管理：自动内存管理，并具备垃圾回收机制，程序员无需手动释放内存。
+
+其他优点：易于学习、代码效率高、开发速度快、体系结构中立、软件易于发布。
+
+1.1.3 Java类库
+
+Java程序的最小组成单位是类，类封装了数据与处理数据的方法。
+
+Java类库（API）：大量预编译、测试好的类的集合，提供常用功能（如输入输出、网络、集合等）。
+
+大部分类库随JDK提供，部分由第三方软件开发商提供。
+
+
+1.2 Java程序概述
+
+1.2.1 Java开发环境
+
+Java程序编译执行过程：
+1. 编写 .java 源文件。
+2. 使用 javac 编译器编译为 .class 字节码文件。
+3. JVM中的解释器（java命令）执行字节码，或通过即时编译（JIT）提升性能。
+
+Java平台组成：
+- Java API：标准类库。
+- Java虚拟机（JVM）：运行Java代码的假想机器。
+
+JDK（Java Development Kit）：
+- 标准版（Java SE）和企业版（Java EE）。
+- 核心部分：
+  - 开发工具：编译器（javac）、调试器（jdb）、文档生成器（javadoc）等。
+  - 运行环境（JRE）：包含JVM和API类。
+  - 附加库、演示程序、帮助文档。
+
+常用开发工具：
+javac : 编译 .java 文件为 .class 字节码
+java : 执行字节码文件（启动JVM）
+jdb : 调试Java程序
+javap : 反编译类文件，查看方法和变量
+javadoc : 从源代码生成HTML格式的API文档
+appletviewer : 运行Applet小程序（已较少使用）
+
+安装与目录：
+- 下载地址：https://www.oracle.com/java/technologies/downloads/
+- 安装后主要目录：
+  - \bin ：开发工具（javac, java等）
+  - \demo ：示例程序
+  - \lib ：开发类库
+  - \jre ：Java运行环境（虚拟机、运行类库）
+
+集成开发环境（IDE）：Eclipse、IntelliJ IDEA 等。
+
+1.2.2 Application举例
+
+Application：独立运行的Java程序，运行在客户端JVM上。
+
+特点：
+- 可读写本地文件。
+- 拥有自己的主窗口、标题栏和菜单（如果使用GUI）。
+- 可以命令行方式运行。
+
+入口方法：主类必须包含 public static void main(String[] args) 方法。
+
+示例程序（例1-1）：
+
+public class MyClass {
+    int val1, val2;
+    public void myFun(int x, int y) {
+        val1 = x;
+        val2 = y;
+        System.out.println("The sum is: " + (val1 + val2));
+    }
+    public static void main(String[] args) {
+        MyClass myObj = new MyClass();
+        myObj.myFun(1, 2);
+    }
+}
+
+编译运行：
+javac MyClass.java
+java MyClass
+
+输出：The sum is: 3
+
+
+1.3 基本数据类型与表达式
+
+1.3.1 变量与常量
+
+变量：由标识符命名的存储单元，具有类型和作用域，值可改变。
+
+常量：一旦初始化后值不可改变（使用 final 关键字修饰）。
+
+1.3.2 基本数据类型
+
+类型      关键字  宽度(bit)  取值范围（或取值）
+字节型    byte    8          -128 ~ 127
+短整型    short   16         -32768 ~ 32767
+整型      int     32         -2^31 ~ 2^31-1
+长整型    long    64         -2^63 ~ 2^63-1
+字符型    char    16         0 ~ 65535（Unicode字符）
+布尔型    boolean 8(实际)    true 或 false
+单精度浮点 float  32         约 ±3.4E-38 ~ ±3.4E+38，有效位数6~7位
+双精度浮点 double 64         约 ±1.8E-308 ~ ±1.8E+308，有效位数15位
+
+整数运算：
+- 算术运算符：+ - * / %（取余）
+- 自增自减：++ --
+- 比较运算符：< <= > >= == !=
+- 移位运算符：<< >> >>>（无符号右移）
+- 位运算符：&（与） |（或） ^（异或） ~（非）
+
+浮点数运算：支持相同的算术、比较和位运算（注意浮点数精度问题）。
+
+布尔类型：
+- 只有 true 和 false。
+- 布尔运算符：!（逻辑非）、&（逻辑与）、|（逻辑或）、^（异或）、&&（短路与）、||（短路或）、条件运算符 ?: 。
+
+String类型：
+- String 是一个类，属于JDK标准库。
+- 字符串连接使用 + 运算符。
+- 示例：String animal = "walrus";
+
+直接量（Literal）：
+- 整数直接量：十进制 15，十六进制 0xff，八进制 0377。
+- 浮点直接量：1e1f（float）、2.0（double），可带后缀 f/F、d/D。
+- 布尔直接量：true、false。
+- 字符直接量：单引号括起，如 'a'，支持转义序列（\n、\t、\\、\"等）。
+- 字符串直接量：双引号括起，如 "Hello"，空串 ""。
+
+1.3.3 表达式与运算符
+
+表达式：由变量、运算符、方法调用组成，可计算出一个值。
+
+赋值运算符：
+- 简单赋值 =
+- 复合赋值：+= -= *= /= %= 等。
+- 示例：a = b = c = 5（右结合，所有变量赋值为5）
+
+关系运算符：结果为布尔值。instanceof 用于判断对象是否为某个类的实例。
+
+逻辑运算符：&&（全真为真）、||（有真为真）、!（取反）。
+
+条件运算符：表达式1 ? 表达式2 : 表达式3 。先计算表达式1，若真则取表达式2的值，否则取表达式3的值。
+
+1.3.4 类型转换
+
+扩展转换（自动，安全）：
+- byte → short → int → long → float → double
+- 从整数到整数不丢信息；整数到 float/double 可能丢失精度。
+
+窄化转换（需强制转换，可能丢失信息）：
+- double → float → long → int → short → byte / char
+
+字符串转换：任何类型（包括 null）与字符串用 + 连接时自动转换为字符串。
+
+赋值转换：将表达式类型自动转换为变量类型（若允许扩展转换）。
+
+方法调用转换：实参类型自动转换为形参类型（若允许扩展转换）。
+
+强制转换：(目标类型) 表达式，例如 (float)5.0 。
+
+数字提升：
+- 一元数字提升：byte、short、char 自动提升为 int。
+- 二元数字提升：两个操作数按规则转换为同一类型（如 int + double → double）。
+
+标准输入输出：
+- 标准输入流：System.in
+- 标准输出流：System.out
+- 示例：System.out.println("Hello world!");
+
+
+1.4 数组的概念
+
+数组：由同一类型的多个元素组成，通过同一个标识符引用。
+
+本质：数组是对象，动态初始化，可以赋值给 Object 类型变量，并调用 Object 的所有方法。
+
+特点：长度固定，下标从0开始。
+
+
+1.5 数组的创建和引用
+
+1.5.1 数组的声明
+
+声明时不分配内存，也不指定元素个数。
+
+两种语法格式（推荐第一种）：
+Type[] arrayName;       // 推荐
+Type arrayName[];       // 兼容C/C++风格
+
+示例：int[] intArray;   String[] stringArray;
+
+1.5.2 数组的创建
+
+使用 new 关键字创建数组对象，指定类型和长度（长度可以是变量）。
+
+基本类型数组：每个元素是基本类型的变量。
+
+引用类型数组：每个元素是对象的引用（初始为 null）。
+
+示例：
+int[] ai = new int[10];          // 创建10个int元素的数组
+String[] s = new String[3];      // 创建3个String引用的数组
+String[] s1 = new String[3], s2 = new String[8]; // 同时创建多个
+
+1.5.3 数组元素的初始化
+
+静态初始化：声明时直接给出初值，自动创建数组。
+int a[] = {22, 33, 44, 55};
+
+默认初始化：如果只 new 未显式赋值，系统赋予默认值：
+- 数值类型：0
+- boolean：false
+- 引用类型：null
+
+数组创建后，可通过下标单独修改元素值。
+
+1.5.4 数组的引用
+
+通过下标访问元素：arrayName[index]
+
+下标类型必须是 int、short、byte 或 char（自动提升为 int）。
+
+下标范围：0 到 length-1。访问越界将抛出 ArrayIndexOutOfBoundsException。
+
+获取数组长度：arrayName.length（注意是属性，不是方法）。
+
+数组名是引用：将一个数组变量赋值给另一个变量，两者引用同一个数组对象。修改其中一个会影响另一个。
+int[] a1 = {1,2,3,4,5};
+int[] a2 = a1;
+a2[0]++;   // a1[0] 也变为2
+
+字符串数组示例：
+String[] strArray = new String[8];
+strArray[0] = "Hello";
+
+数组复制：使用 System.arraycopy() 方法。
+public static void arraycopy(Object src, int srcIndex,
+                             Object dest, int destIndex, int length)
+
+示例：
+char[] copyFrom = {'d','e','c','a','f','f','e','i','n','a','t','e','d'};
+char[] copyTo = new char[7];
+System.arraycopy(copyFrom, 2, copyTo, 0, 7);
+System.out.println(new String(copyTo));  // 输出：caffein
+
+1.5.5 多维数组
+
+在Java中，多维数组本质上是数组的数组。
+
+声明与构造：
+int[][] gradeTable;                 // 声明，null
+int[][] myArray = new int[3][5];    // 3行5列，所有元素初始0
+int[][] myArray = {                 // 静态初始化
+    {8,1,2,2,9},
+    {1,9,4,0,3},
+    {0,3,0,0,7}
+};
+
+不规则数组：每一行的长度可以不同。
+int[][] uneven = {
+    {1,9,4},
+    {0,2},
+    {0,1,2,3,4}
+};
+System.out.println(uneven.length);        // 3（行数）
+System.out.println(uneven[0].length);     // 3
+System.out.println(uneven[1].length);     // 2
+System.out.println(uneven[2].length);     // 5
+
+分步创建：
+int[][] myArray;
+myArray = new int[3][];          // 先指定行数，列数暂不分配
+myArray[0] = new int[3];
+int[] x = {0,2};
+myArray[1] = x;
+myArray[2] = new int[]{0,1,2,3,4};
+
+1.6 本章小结
+
+学习内容：
+- Java开发环境的搭建与使用（JDK、JVM、命令行工具）。
+- Java语言的核心特点（面向对象、平台无关性、安全性、多线程、自动内存管理）。
+- Java程序的基本结构（类、main方法）。
+- 基本数据类型、变量、常量、运算符、表达式及类型转换。
+- 数组的声明、创建、初始化、访问、复制以及多维数组（包括不规则数组）。
+
+复习要求：
+- 下载并安装JDK，配置环境变量。
+- 熟悉至少一种集成开发环境（如Eclipse、IntelliJ IDEA）。
+- 能够独立编写、编译和运行简单的Java程序。
+
+扩展说明：
+- JVM内存模型：数组对象存储在堆内存中，局部变量（数组引用）存储在栈内存中。
+- 垃圾回收：当数组不再被任何引用指向时，JVM会自动回收其占用的内存。
+- 增强for循环：遍历数组可简写为 for (int e : intArray) { ... }，但需注意它不能修改原数组元素（引用类型可修改对象内部状态）。
+- Arrays工具类：java.util.Arrays 提供了大量静态方法用于数组排序、查找、填充、比较等。
