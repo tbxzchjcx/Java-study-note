@@ -1,0 +1,220 @@
+第七章 对象群体的组织 完整总结
+
+本章主要讲解如何组织和管理多个对象，包括对象数组和 Java 集合框架（Collection、Map）。数组效率高但大小固定；集合可动态扩展，功能更丰富。
+
+ 7.1 对象数组
+数组是 Java 中存储和随机访问对象序列效率最高的方式。它知道元素类型，编译时进行类型检查，大小固定。代价是数组大小在生存期内不可变。
+
+7.1.1 用数组存储对象
+对象数组的每个元素都是对象的引用。
+
+静态初始化：声明时直接赋值。
+```java
+BankAccount[] accounts = {
+    new BankAccount("Zhang", 100.00),
+    new BankAccount("Li", 2380.00),
+    new BankAccount("Wang", 500.00)
+};
+```
+
+动态初始化：先分配数组空间，再为每个元素分配对象空间。
+```java
+Student[] students = new Student[5];
+students[0] = new Student("001", "张三", 85, 90, 88);
+students[1] = new Student("002", "李四", 78, 82, 80);
+```
+
+例7_1：学生类（Student）包含学号、姓名、三门课成绩及总成绩，实现 Serializable 接口以便持久化。班级类（StudentClass）包含学生数组，提供添加、删除、查找、排序等方法。测试类从键盘输入学生信息，保存到文件 `stu.ser` 中。
+
+查找（顺序查找）：根据学号返回数组下标。
+```java
+public int find(String id) {
+    for (int i = 0; i < size; i++)
+        if (students[i].getId().equals(id))
+            return i;
+    return -1;
+}
+```
+
+添加：在数组末尾增加学生，需检查容量和学号是否已存在。
+```java
+public boolean add(Student aStudent) {
+    if (size == capacity) return false;
+    if (find(aStudent.getId()) >= 0) return false;
+    students[size++] = new Student(aStudent);
+    return true;
+}
+```
+
+删除：根据学号删除，将后续元素前移。
+```java
+public boolean del(String id) {
+    int pos = find(id);
+    if (pos == -1) return false;
+    for (int i = pos + 1; i < size; i++)
+        students[i-1] = students[i];
+    size--;
+    return true;
+}
+```
+
+7.1.2 对数组元素进行排序
+
+选择排序（降序）：
+```java
+public void selectionSort() {
+    Student temp;
+    for (int i = 0; i < size - 1; i++)
+        for (int j = i + 1; j < size; j++)
+            if (students[j].compare(students[i]) > 0) { // compare返回正数表示j成绩更高
+                temp = students[i];
+                students[i] = students[j];
+                students[j] = temp;
+            }
+}
+```
+
+**例7_2**：从文件 `stu.ser` 读取学生信息，调用 `selectionSort()` 按总成绩降序排序，输出排序前后结果。
+
+7.3 集合（Collection, Map）
+数组的缺点：大小固定、只能存同类型数据。集合可动态改变大小，能存储不同类型对象。
+
+7.3.1 Java集合框架
+集合框架提供统一的标准体系结构，包含三大块：
+- **接口**：表示集合的抽象数据类型，如 Collection、Set、List、Map。
+- **实现**：可重用的数据结构，如 ArrayList、HashSet、HashMap。
+- **算法**：查找、排序等操作。
+
+主要接口：
+- `Collection`：所有单值集合的根接口，定义 `add`、`remove`、`size` 等方法。
+- `Set`：不允许重复元素（如 HashSet、TreeSet）。
+- `List`：有序、可重复元素（如 ArrayList、LinkedList、Vector）。
+- `Map`：键值对，键唯一（如 HashMap、Hashtable）。
+
+算法（Collections类）：
+- `sort(List)`：排序。
+- `shuffle(List)`：随机打乱顺序。
+- `reverse(List)`：反转。
+- `binarySearch(List, key)`：二分查找。
+- `min`/`max`：求最值。
+
+Arrays实用类：
+- `fill()`：填充数组。
+- `equals()`：比较数组。
+- `sort()`：排序。
+- `binarySearch()`：二分查找。
+- `asList()`：将数组转为 List。
+
+ 7.3.2 Vector 和 ArrayList
+两者都实现 List 接口，可自动扩容，不能存基本类型（需用包装类）。区别：Vector 是同步的（线程安全），ArrayList 不同步（效率更高）。
+
+构造方法：
+```java
+Vector v = new Vector();              // 初始容量10
+Vector v = new Vector(20);            // 初始容量20
+ArrayList list = new ArrayList();
+ArrayList list = new ArrayList(30);
+```
+
+常用方法（Vector 和 ArrayList 共有）：
+```java
+void add(Object obj)                // 添加元素
+void add(int index, Object obj)     // 指定位置插入
+Object get(int index)               // 获取元素
+Object set(int index, Object obj)   // 替换
+Object remove(int index)            // 删除指定位置
+boolean remove(Object obj)          // 删除首次出现
+int size()                          // 元素个数
+boolean isEmpty()                   // 是否为空
+boolean contains(Object obj)        // 是否包含
+int indexOf(Object obj)             // 首次出现的位置
+void clear()                        // 清空
+```
+
+使用示例：
+```java
+// 存储自定义对象
+Vector<Customer> v = new Vector<>();
+v.add(new Customer("张三"));
+Customer c = v.get(0);   // 无需强制转型（泛型）
+System.out.println(c.getName());
+
+// 存储基本类型（使用包装类）
+Vector<Double> rates = new Vector<>();
+rates.add(36.25);   // 自动装箱
+double sum = 0.0;
+for (int i = 0; i < rates.size(); i++)
+    sum += rates.get(i);   // 自动拆箱
+```
+7.3.3 Enumeration 和 Iterator 接口
+用于遍历集合元素。Enumeration 是旧版（JDK1.0），只适用于 Vector；Iterator 是改进版，适用于所有集合，并允许在遍历时删除元素。
+
+Enumeration 示例：
+```java
+Vector<String> v = new Vector<>();
+v.add("A"); v.add("B");
+Enumeration e = v.elements();
+while (e.hasMoreElements()) {
+    String s = (String) e.nextElement();
+    System.out.println(s);
+}
+```
+
+Iterator 示例：
+```java
+ArrayList<String> list = new ArrayList<>();
+list.add("one"); list.add("two"); list.add("three");
+Iterator<String> it = list.iterator();
+while (it.hasNext()) {
+    String s = it.next();
+    if (s.length() > 3)
+        it.remove();   // 安全删除
+}
+System.out.println(list); // [one, two]
+```
+
+注意：使用 Enumeration 时不能在遍历过程中修改集合（删除元素会出问题），而 Iterator 的 `remove()` 方法可以。
+
+7.3.4 Map 接口及其类层次
+Map 存储键值对，键唯一。主要实现类：Hashtable（同步，键值不能为 null）和 HashMap（不同步，允许 null 键/值）。
+
+常用方法：
+```java
+Object put(Object key, Object value)   // 添加键值对
+Object get(Object key)                 // 根据键取值
+Object remove(Object key)              // 删除键值对
+boolean containsKey(Object key)        // 是否包含键
+boolean containsValue(Object value)    // 是否包含值
+Set keySet()                           // 返回所有键的Set
+Collection values()                    // 返回所有值的Collection
+int size()
+void clear()
+```
+
+使用示例：
+```java
+HashMap<String, String> phoneBook = new HashMap<>();
+phoneBook.put("张三", "13800000000");
+phoneBook.put("李四", "13912345678");
+String phone = phoneBook.get("张三");   // "13800000000"
+
+// 遍历键值对
+for (Map.Entry<String, String> entry : phoneBook.entrySet()) {
+    System.out.println(entry.getKey() + " : " + entry.getValue());
+}
+```
+
+ 7.3.5 哈希表原理
+哈希表通过哈希函数将关键字映射到存储位置，实现快速存取。装填因子（默认0.75）影响性能，当元素过多时自动扩容。
+
+ 7.4 本章小结
+- 对象数组适合大小固定、访问频繁的场景。
+- Java 集合框架提供丰富的接口和实现，满足动态存储、不同类型元素、键值映射等需求。
+- 掌握 `Arrays` 工具类、`ArrayList`、`Vector`、`HashMap`、`Iterator` 等常用类和方法。
+
+
+扩展说明：
+- 泛型（JDK1.5后）增强了类型安全，避免强制转型。如 `ArrayList<Student>`。
+- `Collections` 类与 `Arrays` 类都是工具类，分别操作集合和数组。
+- 实际开发中，`ArrayList` 比 `Vector` 更常用（除非需要线程安全）；`HashMap` 比 `Hashtable` 更常用。
+- 从 Java 8 开始，还可使用 Stream API 对集合进行函数式操作（如 `list.stream().filter(...).collect(...)`）。

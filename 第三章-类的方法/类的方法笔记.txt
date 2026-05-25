@@ -1,0 +1,239 @@
+## 第三章 类的方法 完整总结
+
+3.1 方法的控制流程
+
+Java程序通过控制语句来控制方法的执行流程。流程控制结构主要有三种：顺序结构、选择结构、循环结构。
+
+3.1.1 if选择结构
+
+if语句用于二路选择，语法形式包括：
+
+只有if分支，没有else分支：
+if (boolean-expression) {
+    // 语句1
+}
+
+if-else语句：
+if (boolean-expression) {
+    // 语句1
+} else {
+    // 语句2
+}
+
+if-else if-else多分支形式：
+if (boolean-expression) {
+    // 语句1
+} else if (boolean-expression) {
+    // 语句2
+} else {
+    // 语句3
+}
+
+例3_1：判断闰年。输入年份，判断条件：能被4整除但不能被100整除，或者能被400整除。使用if-else输出结果。
+
+例3_2：比较两个整数大小，通过if嵌套实现。
+
+例3_1（方法版）：计算每个月的天数，使用if-else if结构，2月返回28天，4、6、9、11月返回30天，其余返回31天。
+
+ifElseDemo.java：根据分数评定等级，90分以上A，80-89为B，70-79为C，60-69为D，60以下为F。
+
+条件运算符? :可以代替简单的if-else，例如：(a>b)?a:b 返回较大值。
+
+3.1.2 switch选择结构
+
+switch是多分支选择结构，适用于表达式取值为整型或字符型的情况。
+
+语法：
+switch (switch-expression) {
+    case value1: 语句1; break;
+    case value2: 语句2; break;
+    ...
+    default: 默认语句; break;
+}
+
+注意：switch-expression和case后的常量值必须是整型或字符型。若匹配某个case，则从该case开始执行直到遇到break。default可选，若没有匹配则执行default。
+
+例3_2：使用switch计算每月天数，case 2返回28，case 4、6、9、11返回30，default返回31。
+
+例3_3：成绩分级，先用Math.floor(g/10)将分数转为0-10的整数，再用switch判定A-E等级。
+
+补充ex3_3.java：输入0-6整数，转换成星期几输出，0对应星期日。
+
+3.1.3 for循环结构
+
+for循环功能强大，支持嵌套。语法：
+for (start-expression; check-expression; update-expression) {
+    // 循环体
+}
+
+执行过程：先执行起始表达式，再判断条件表达式，若真则执行循环体，然后执行更新表达式，再判断条件，直到条件为假退出。
+
+打印九九乘法表示例：外层循环i=1到9，内层循环j=1到i，输出i*j。
+
+补充ex3_7.java：输入整数，输出它所有的因数，通过for循环遍历1到n，若n%k==0则输出k。
+
+逗号运算符：可在for的初始化和递增部分使用多个由逗号分隔的语句，依次计算。示例：for(int i=1, j=i+10; i<5; i++, j=i*2) {...}
+
+3.1.4 while循环结构
+
+while是“当型”循环，先判断条件再执行。语法：
+while (check-expression) {
+    // 循环体
+}
+
+执行过程：计算条件表达式，若真则执行循环体，重复；若假则退出。
+
+示例：计算1到10的和，用while(i<=10)累加。
+
+例3_4：存款翻倍问题，本金10000元，年利率11.25%，计算多少年存款达到20000元。while循环中逐年累加利息，输出每年的存款额，直到money >= 2*original。
+
+3.1.5 do-while循环结构
+
+do-while是“直到型”循环，先执行一次循环体再判断条件，因此至少执行一次。语法：
+do {
+    // 循环体
+} while (check-expression);
+
+补充ex3_5.java：输入整数，输出其翻转形式。通过do-while循环每次取末位数字输出，然后n/=10，直到n为0。
+
+while与do-while对比：若初始条件不满足，while一次都不执行，do-while至少执行一次。
+
+3.1.6 break语句
+
+break功能：跳出当前循环或switch结构，不再执行剩余部分。
+
+适用场合：
+- 在switch中终止语句执行。
+- 在循环中终止最内层循环。
+- 与标号一同使用，跳出标号所标识的循环。
+
+例3_5：for循环i=1到10，当i==5时break，输出1 2 3 4，然后显示Broke out of loop at i=5。
+
+例3_6：嵌套循环中，内层循环j>i时break，实现打印乘法表上三角部分。
+
+例3_7：带标号的break。outer: for(...){ for(...){ if(i==6) break outer; } } 当i==6时跳出外层循环，只打印到5*5。
+
+3.1.7 continue语句
+
+continue用于循环结构，停止本次迭代，提前开始下一次迭代。
+
+不带标号的continue：
+- 在while/do-while中，直接跳转到条件表达式。
+- 在for中，跳转到更新表达式，然后判断条件。
+
+例3_8：for循环i=1到10，当i==5时continue，跳过打印5，输出1 2 3 4 6 7 8 9 10，循环结束后i=11。
+
+例3_9：打印2到9之间的偶数的平方，但跳过偶数6的平方，使用if(i==6) continue。
+
+带标号的continue：格式 continue label; 跳转到标号指定的循环层次。
+
+3.2 异常处理简介
+
+异常是程序运行过程中发生的异常事件，会阻止程序正常运行。Java具有特定的运行错误处理机制，增强程序鲁棒性。
+
+3.2.1 异常处理的意义
+
+异常是特殊的运行错误对象，是面向对象规范的一部分。每个异常类代表一种运行错误，包含错误信息和处理方法。当发生可识别的运行错误时，系统产生相应的异常对象。
+
+Java处理错误的方式：
+- 抛出异常：方法中发生异常时，生成异常对象并交给运行时系统。
+- 捕获异常：运行时系统在方法调用栈中回溯，查找包含异常处理的方法。
+
+Java异常处理机制的优点：将错误处理代码从常规代码中分离；按错误类型分组；能捕获无法预测的错误；克服传统方法信息有限的问题；能把错误传播给调用栈。
+
+3.2.2 错误的概念
+
+错误分为两类：
+- Error：致命性错误，用户程序无法处理，Error类是所有错误类的父类。
+- Exception：非致命性异常，可编写程序捕获和处理，Exception类是所有异常类的父类。
+
+异常进一步分为：
+- 非检查型异常：继承自RuntimeException，不能期望程序捕获（如数组越界、除零），编译器不检查。
+- 检查型异常：其他异常，编译器强制要求处理（捕获或声明抛出）。
+
+Java预定义的一些常见异常：
+- ArithmeticException：除数为0
+- NullPointerException：访问未实例化的对象
+- NegativeArraySizeException：创建数组时长度为负数
+- ArrayIndexOutOfBoundsException：数组下标越界
+- ArrayStoreException：向数组存入错误类型的数据
+- FileNotFoundException：文件不存在
+- IOException：通用I/O错误
+
+例3_11：测试数组越界异常，循环访问greetings[0]到[3]，数组长度3，访问下标3时抛出ArrayIndexOutOfBoundsException。
+
+3.2.3 异常的处理
+
+对于检查型异常，Java强制处理，有两种方式：
+
+1. 声明抛出异常：在方法后用throws子句声明抛出异常，不在当前方法内处理。如果所有方法都抛出，最终JVM捕获并输出错误信息。
+
+示例：public void openThisFile(String fileName) throws java.io.FileNotFoundException {...}
+
+2. 捕获异常：使用try-catch-finally块。
+
+语法：
+try {
+    // 可能产生异常的代码
+} catch (exceptiontype name) {
+    // 异常处理语句
+} finally {
+    // 无论是否异常都会执行的代码（通常释放资源）
+}
+
+说明：
+- try后跟随可能产生异常的代码块。
+- catch中常用getMessage()返回异常描述，printStackTrace()输出调用栈信息。
+- finally中的代码不论是否产生异常都会执行。
+- 多个catch时，异常类型应特殊在前、一般在后。
+
+例3_12：读入两个整数并相除，使用Keyboard类读入，未处理异常时，输入非整数会抛出NumberFormatException，除数为0抛出ArithmeticException。
+
+例3_13：捕获NumberFormatException，输入非整数时提示并退出。
+
+例3_14：同时捕获NumberFormatException和ArithmeticException，分别处理。
+
+改进版：重复提示直到输入合法数据，使用while循环和try-catch，将输入存入数组，最后计算除法。
+
+3.2.4 生成异常对象
+
+可以通过throw语句手动抛出异常对象。格式：throw new 异常类名();
+
+例3_16：分别抛出ArithmeticException、ArrayIndexOutOfBoundsException、StringIndexOutOfBoundsException，并捕获打印。
+
+3.2.5 声明自己的异常类
+
+用户可自定义异常类，必须是Exception的子类（或RuntimeException的子类）。
+
+一般格式：
+public class MyExceptionName extends SuperclassOfMyException {
+    public MyExceptionName() {
+        super("Some string explaining the exception");
+    }
+}
+
+例3_17：定义DivideByZeroException继承ArithmeticException，构造方法中调用super("Attempted to divide by zero")。在quotient方法中判断除数为0时throw new DivideByZeroException()。主方法中捕获该异常。
+
+3.3 方法重载
+
+方法重载是指在同一个类中，多个方法具有相同的名字，但参数列表不同（参数个数不同或参数类型不同）。返回值可以相同也可以不同。重载的价值在于允许通过一个方法名访问多个方法。
+
+例3_18：MethodOverloading类中定义了多个receive方法，分别接收int、double、String、两个int、int+double等不同类型和数量的参数。主方法中创建对象并分别调用，系统根据参数自动匹配相应方法。
+
+3.4 本章小结
+
+本章内容：
+- Java程序中类方法的控制结构：顺序、分支（if、switch）、循环（for、while、do-while），以及break、continue语句的用法。
+- Java的异常处理机制：错误和异常的区分，检查型异常和非检查型异常，抛出异常、捕获异常（try-catch-finally），生成异常对象，自定义异常类。
+- 方法的重载：相同方法名、不同参数列表，编译器根据参数区分。
+
+本章要求：
+- 掌握三种流程控制语法并熟练应用。
+- 了解Java异常处理机制，会编写相应的异常处理程序。
+- 掌握方法重载的含义并熟练应用。
+
+扩展说明：
+- 在循环中使用break和continue时，如果有多层嵌套，带标号的版本可以跳出指定层，提高灵活性。
+- 异常处理中，finally块常用于关闭文件、数据库连接等资源，确保资源释放。
+- 方法重载中，不能仅通过返回值类型不同来区分重载方法，必须通过参数列表。
+- Java 7之后，try-catch中可以合并多个异常类型，如catch (IOException | SQLException e)。

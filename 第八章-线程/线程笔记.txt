@@ -1,0 +1,440 @@
+第八章 线程 详细笔记
+
+8.1 多线程编程基础
+
+8.1.1 线程的概念
+
+进程：一个独立程序的每一次运行称为一个进程。例如同时运行字处理软件和音乐播放器，就是两个进程。进程占用较多资源，进程间内存隔离，通信复杂。
+
+线程：一个程序中多段代码同时并发执行，称为多线程。一个进程可以包含多个线程，线程间共享进程的资源（如内存），创建线程的开销比进程小得多，线程之间协作和数据交换也比较容易。Java是第一个内置支持多线程的主流编程语言。
+
+8.1.2 Thread类
+
+在Java中创建多线程的一种方法是继承Thread类。需要重写run()方法，在其中写入新线程要执行的代码。然后创建该子类的对象，调用start()方法启动线程，新线程会自动进入run()方法，同时原线程继续执行。
+
+例8_1：在新线程中计算整数的阶乘
+
+public class Ex8_1 {
+    public static void main(String[] args) {
+        System.out.println("main thread starts");
+        FactorialThread thread = new FactorialThread(10);
+        thread.start();
+        System.out.println("main thread ends");
+    }
+}
+
+class FactorialThread extends Thread {
+    private int num;
+    public FactorialThread(int num) {
+        this.num = num;
+    }
+    public void run() {
+        int i = num;
+        int result = 1;
+        System.out.println("new thread started");
+        while (i > 0) {
+            result = result * i;
+            i = i - 1;
+        }
+        System.out.println("The factorial of " + num + " is " + result);
+        System.out.println("new thread ends");
+    }
+}
+
+运行结果示例：
+main thread starts
+main thread ends
+new thread started
+The factorial of 10 is 3628800
+new thread ends
+
+说明：main线程调用thread.start()后并不等待新线程结束就继续执行，所以"main thread ends"可能在计算完成之前就输出了。如果希望main线程等待新线程结束，可以在start()后调用thread.join()。
+
+常用API：
+- Thread()：构造新线程，默认名Thread-n
+- Thread(Runnable target)：以Runnable对象为参数构造线程
+- Thread(String name)：指定线程名
+- currentThread()：返回当前运行的线程对象
+- yield()：当前线程暂停，允许其他线程执行
+- sleep(long millis)：使当前线程暂停指定毫秒数
+- start()：启动线程，JVM调用run()
+- run()：需要重写的方法
+- stop()：停止线程（不推荐，可能破坏数据完整性）
+- interrupt()：打断线程
+- join()：在当前线程中加入调用join的线程，直到该线程死亡
+- setPriority(int)：设置优先级
+- setDaemon(boolean)：设置后台线程，必须在start()前调用
+- isAlive()：测试线程是否处于活动状态
+
+例8_2：创建3个新线程，每个随机休眠0~6秒后结束
+
+public class Ex8_2 {
+    public static void main(String[] args) {
+        TestThread thread1 = new TestThread("thread1");
+        TestThread thread2 = new TestThread("thread2");
+        TestThread thread3 = new TestThread("thread3");
+        System.out.println("Starting threads");
+        thread1.start();
+        thread2.start();
+        thread3.start();
+        System.out.println("Threads started, main ends\n");
+    }
+}
+
+class TestThread extends Thread {
+    private int sleepTime;
+    public TestThread(String name) {
+        super(name);
+        sleepTime = (int)(Math.random() * 6000);
+    }
+    public void run() {
+        try {
+            System.out.println(getName() + " going to sleep for " + sleepTime);
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+        }
+        System.out.println(getName() + " finished");
+    }
+}
+
+运行结果示例：
+Starting threads
+Threads started, main ends
+thread1 going to sleep for 3519
+thread2 going to sleep for 1689
+thread3 going to sleep for 5565
+thread2 finished
+thread1 finished
+thread3 finished
+
+说明：休眠时间最短的线程最先结束。
+
+8.1.3 Runnable接口
+
+Runnable接口只有一个run()方法。实现Runnable接口的类可以作为参数创建Thread对象。当类已经继承其他父类时（Java不支持多继承），可以通过实现Runnable来创建线程。另外，使用Runnable更容易实现多个线程共享数据。
+
+例8_3：使用Runnable接口实现阶乘计算
+
+public class Ex8_3 {
+    public static void main(String[] args) {
+        System.out.println("main thread starts");
+        FactorialThread t = new FactorialThread(10);
+        new Thread(t).start();
+        System.out.println("new thread started, main thread ends");
+    }
+}
+
+class FactorialThread implements Runnable {
+    private int num;
+    public FactorialThread(int num) {
+        this.num = num;
+    }
+    public void run() {
+        int i = num;
+        int result = 1;
+        while (i > 0) {
+            result = result * i;
+            i--;
+        }
+        System.out.println("The factorial of " + num + " is " + result);
+        System.out.println("new thread ends");
+    }
+}
+
+例8_4：使用Runnable实现随机休眠的3个线程
+
+public class Ex8_4 {
+    public static void main(String[] args) {
+        TestThread thread1 = new TestThread();
+        TestThread thread2 = new TestThread();
+        TestThread thread3 = new TestThread();
+        System.out.println("Starting threads");
+        new Thread(thread1, "Thread1").start();
+        new Thread(thread2, "Thread2").start();
+        new Thread(thread3, "Thread3").start();
+        System.out.println("Threads started, main ends\n");
+    }
+}
+
+class TestThread implements Runnable {
+    private int sleepTime;
+    public TestThread() {
+        sleepTime = (int)(Math.random() * 6000);
+    }
+    public void run() {
+        try {
+            System.out.println(Thread.currentThread().getName() + " going to sleep for " + sleepTime);
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {}
+        System.out.println(Thread.currentThread().getName() + " finished");
+    }
+}
+
+8.1.4 线程间的数据共享
+
+数据共享：当多个线程访问同一个对象时，它们共享该对象的数据。使用Runnable接口可以轻松实现多个线程共享相同数据：用同一个Runnable实例作为参数创建多个线程即可。
+
+例8_5：用一个Runnable对象创建3个线程，它们共享sleepTime变量
+
+public class Ex8_5 {
+    public static void main(String[] args) {
+        TestThread threadobj = new TestThread();
+        System.out.println("Starting threads");
+        new Thread(threadobj, "Thread1").start();
+        new Thread(threadobj, "Thread2").start();
+        new Thread(threadobj, "Thread3").start();
+        System.out.println("Threads started, main ends\n");
+    }
+}
+
+class TestThread implements Runnable {
+    private int sleepTime;
+    public TestThread() {
+        sleepTime = (int)(Math.random() * 6000);
+    }
+    public void run() {
+        try {
+            System.out.println(Thread.currentThread().getName() + " going to sleep for " + sleepTime);
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {}
+        System.out.println(Thread.currentThread().getName() + " finished");
+    }
+}
+
+运行结果中三个线程的休眠时间相同（因为sleepTime是同一个对象的一个成员，被三个线程共享）。如果希望每个线程有自己的休眠时间，则应该在创建Runnable实例时分别new不同的对象。
+
+例8_6：用三个线程模拟三个售票口，总共出售200张票（共享票数）
+
+public class Ex8_6 {
+    public static void main(String[] args) {
+        SellTickets t = new SellTickets();
+        new Thread(t).start();
+        new Thread(t).start();
+        new Thread(t).start();
+    }
+}
+
+class SellTickets implements Runnable {
+    private int tickets = 200;
+    public void run() {
+        while (tickets > 0) {
+            System.out.println(Thread.currentThread().getName() + " is selling ticket " + tickets--);
+        }
+    }
+}
+
+说明：三个线程共享同一个SellTickets对象，因此tickets变量是共享的，总共卖出200张票。如果使用继承Thread的方式并分别创建三个对象，则每个对象有自己的tickets变量，会各自卖出200张票（如例8_6_2所示，是错误的）。
+
+8.1.5 多线程的同步控制
+
+当多个线程共享数据时，可能发生数据不一致的问题。例如，两个线程同时修改同一个变量，可能导致错误的中间状态。因此需要同步控制。
+
+Java使用监视器机制实现同步：每个对象都有一个锁旗标（monitor）。使用synchronized关键字可以获得对象的锁，其他线程必须等待锁被释放才能进入。
+
+synchronized的使用方法：
+- synchronized(对象) { 代码段 }：对指定的对象加锁，执行代码段后释放。
+- synchronized方法：整个方法同步，锁对象是当前实例（对于静态方法是类对象）。
+
+例8_7：存票线程和售票线程共享票对象，但未同步，可能出问题
+
+public class Ex8_7 {
+    public static void main(String[] args) {
+        Tickets t = new Tickets(10);
+        new Consumer(t).start();
+        new Producer(t).start();
+    }
+}
+
+class Tickets {
+    int number = 0;    // 当前已存票号
+    int size;          // 总票数
+    boolean available = false;
+    public Tickets(int size) { this.size = size; }
+}
+
+class Producer extends Thread {
+    Tickets t;
+    public Producer(Tickets t) { this.t = t; }
+    public void run() {
+        while (t.number < t.size) {
+            System.out.println("Producer puts ticket " + (++t.number));
+            t.available = true;
+        }
+    }
+}
+
+class Consumer extends Thread {
+    Tickets t;
+    int i = 0;
+    public Consumer(Tickets t) { this.t = t; }
+    public void run() {
+        while (i < t.size) {
+            if (t.available == true && i <= t.number) {
+                System.out.println("Consumer buys ticket " + (++i));
+            }
+            if (i == t.number) t.available = false;
+        }
+    }
+}
+
+问题：当售票线程在t.available=false之前被CPU切换，可能导致死循环。解决方案：使用synchronized保证互斥。
+
+修改：在Producer和Consumer的run方法中用synchronized(t)包围关键代码段，使存票和售票互斥。
+
+更佳实践：将同步逻辑放在共享资源类Tickets中（例8_8）：
+
+class Tickets {
+    int size;
+    int number = 0;
+    int i = 0;
+    boolean available = false;
+    public Tickets(int size) { this.size = size; }
+    public synchronized void put() {
+        System.out.println("Producer puts ticket " + (++number));
+        available = true;
+    }
+    public synchronized void sell() {
+        if (available && i <= number) {
+            System.out.println("Consumer buys ticket " + (++i));
+        }
+        if (i == number) available = false;
+    }
+}
+
+Producer和Consumer只需要调用t.put()和t.sell()，同步由方法上的synchronized保证。
+
+8.1.6 线程之间的通信
+
+除了互斥，有时还需要线程间协作，比如生产者等待消费者消费后再生产。Object类提供了wait()、notify()、notifyAll()方法用于线程通信。这些方法必须在synchronized代码块或方法中调用。
+
+- wait()：当前线程进入等待状态，释放对象的锁，直到其他线程调用notify()或notifyAll()。
+- notify()：随机唤醒一个在该对象上等待的线程。
+- notifyAll()：唤醒所有等待的线程。
+
+例8_9：存一张票，卖一张票，卖完再存
+
+class Tickets {
+    int size;
+    int number = 0;
+    boolean available = false;
+    public Tickets(int size) { this.size = size; }
+    public synchronized void put() throws InterruptedException {
+        if (available) wait();   // 如果有票未售，则等待
+        System.out.println("Producer puts ticket " + (++number));
+        available = true;
+        notify();  // 唤醒正在等待的消费者
+    }
+    public synchronized void sell() throws InterruptedException {
+        if (!available) wait();  // 如果没有票，则等待
+        System.out.println("Consumer buys ticket " + number);
+        available = false;
+        notify();  // 唤醒生产者
+        if (number == size) number = size + 1; // 结束标志
+    }
+}
+
+Producer和Consumer分别循环调用put()和sell()。运行结果严格按照存一张卖一张的顺序。
+
+8.1.7 后台线程（Daemon）
+
+后台线程是为其他线程提供服务的线程，当所有前台线程结束时，无论后台线程是否还在运行，程序都会终止。垃圾回收线程就是一个后台线程。通过setDaemon(true)将线程设为后台线程，必须在start()之前调用。
+
+例8_10：创建无限循环的后台线程，主线程结束后程序退出
+
+public class Ex8_10 {
+    public static void main(String[] args) {
+        ThreadTest t = new ThreadTest();
+        t.setDaemon(true);
+        t.start();
+    }
+}
+class ThreadTest extends Thread {
+    public void run() { while(true) {} }
+}
+
+注释掉setDaemon(true)后，程序永不结束。
+
+8.2 线程的生命周期
+
+线程有六种基本状态：
+
+- 诞生状态（New）：线程对象刚被创建，尚未启动。
+- 就绪状态（Runnable）：调用start()后，线程已准备好运行，等待CPU调度。
+- 运行状态（Running）：获得CPU执行权，正在运行。
+- 阻塞状态（Blocked）：因等待锁或I/O而阻塞。
+- 休眠状态（Sleeping）：调用sleep()或wait()进入休眠。
+- 死亡状态（Terminated）：run()方法正常结束或因异常退出。
+
+8.2.2 死锁问题
+
+当多个线程相互等待对方释放锁，导致所有线程都无法继续执行，称为死锁。预防死锁的方法：避免嵌套锁定，使用定时锁等。
+
+8.2.3 控制线程的生命
+
+不推荐使用stop()停止线程，因为它可能破坏数据完整性。通常通过控制run方法中的循环条件来安全结束线程。
+
+例8_12：按下回车键停止线程
+
+import java.io.*;
+public class Ex8_12 {
+    public static void main(String[] args) throws IOException {
+        TestThread t = new TestThread();
+        t.start();
+        new BufferedReader(new InputStreamReader(System.in)).readLine();
+        t.stopme();
+    }
+}
+class TestThread extends Thread {
+    private boolean flag = true;
+    public void stopme() { flag = false; }
+    public void run() {
+        int i = 0;
+        while (flag) {
+            System.out.println(i++);
+        }
+    }
+}
+
+8.3 线程的优先级
+
+Java线程优先级范围1~10，默认5。高优先级线程优先执行。相同优先级的线程，调度是随机的（取决于操作系统）。不能依赖优先级保证算法正确性，只能用于效率优化。
+
+可以调用setPriority(int)和getPriority()。创建新线程时，新线程的优先级与创建它的线程相同。
+
+例8_13：两个优先级不同的线程，从1递增到400000
+
+public class Ex8_13 {
+    public static void main(String[] args) {
+        TestThread[] runners = new TestThread[2];
+        for (int i = 0; i < 2; i++) runners[i] = new TestThread(i);
+        runners[0].setPriority(2);
+        runners[1].setPriority(3);
+        for (int i = 0; i < 2; i++) runners[i].start();
+    }
+}
+class TestThread extends Thread {
+    private int tick = 1;
+    private int num;
+    public TestThread(int i) { this.num = i; }
+    public void run() {
+        while (tick < 400000) {
+            tick++;
+            if (tick % 50000 == 0) {
+                System.out.println("Thread #" + num + ", tick = " + tick);
+                yield(); // 让出CPU，但高优先级线程会立即抢回
+            }
+        }
+    }
+}
+
+运行结果：高优先级的线程（#1）几乎一直运行到结束，低优先级的线程（#0）才开始。如果在yield()后加sleep(1)，则低优先级线程有机会运行。
+
+8.4 本章小结
+
+- 线程是进程中的轻量级执行单元，多个线程共享进程资源。
+- 创建线程有两种方式：继承Thread类 或 实现Runnable接口。
+- 多个线程访问共享数据时需要使用synchronized进行同步，避免数据不一致。
+- 线程间通信使用wait()、notify()/notifyAll()。
+- 后台线程不会阻止程序终止。
+- 线程有生命周期：新生、就绪、运行、阻塞/休眠、死亡。
+- 线程优先级范围1~10，高优先级优先执行，但不能依赖优先级保证正确性。

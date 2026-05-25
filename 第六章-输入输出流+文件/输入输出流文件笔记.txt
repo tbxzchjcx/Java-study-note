@@ -1,0 +1,231 @@
+第六章 输入/输出流和文件 完整总结
+
+6.1 输入/输出流
+
+程序常常需要从外部获取信息（键盘、文件、网络等）或输出信息到外部（显示器、文件、网络等）。Java通过 `java.io` 包中的流（Stream）类实现输入/输出。
+
+ 6.1.1 I/O流的概念
+
+流是数据序列，源到目的地的数据流动。输入流：数据流入程序；输出流：数据从程序流出。流类一旦创建自动打开，可以显式调用 `close()` 关闭。
+
+6.1.2 预定义的I/O流类
+
+按方向：输入流、输出流。  
+按分工：节点流（直接连接数据源/目的地）、处理流（包装其他流，提供附加功能）。  
+按内容：面向字符的流（Reader/Writer，处理16位Unicode字符）、面向字节的流（InputStream/OutputStream，处理8位字节）。
+
+面向字符的流：  
+- 抽象基类 `Reader` 和 `Writer`。  
+- 节点流：`FileReader`、`FileWriter`、`CharArrayReader`、`CharArrayWriter`、`StringReader`、`StringWriter`。  
+- 处理流：`BufferedReader`、`BufferedWriter`、`InputStreamReader`、`OutputStreamWriter`、`PrintWriter`。  
+- 常用组合：`BufferedReader in = new BufferedReader(new FileReader("file.txt"))` 用于按行读取。
+
+面向字节的流：  
+- 抽象基类 `InputStream` 和 `OutputStream`。  
+- 节点流：`FileInputStream`、`FileOutputStream`、`ByteArrayInputStream`、`ByteArrayOutputStream`。  
+- 处理流：`BufferedInputStream`、`BufferedOutputStream`、`DataInputStream`、`DataOutputStream`、`ObjectInputStream`、`ObjectOutputStream`。
+
+标准输入输出：  
+- `System.in`：标准输入流（InputStream），默认键盘。  
+- `System.out`：标准输出流（PrintStream），默认屏幕。  
+- `System.err`：标准错误输出流（PrintStream）。  
+- 示例：用 `BufferedReader` 包装 `System.in` 读取键盘输入：
+
+```java
+BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+String s = stdin.readLine();
+```
+
+I/O异常：多数IO方法抛出 `IOException`，必须捕获或声明抛出。
+
+6.2 文件读写
+ File 类
+
+`java.io.File` 表示文件或目录路径信息，不涉及文件内容。常用构造方法：
+- `File(String pathname)`
+- `File(String parent, String child)`
+- `File(File parent, String child)`
+
+常用方法：`exists()`、`isFile()`、`isDirectory()`、`getName()`、`getPath()`、`length()`、`lastModified()`、`canRead()`、`canWrite()`、`mkdir()`、`mkdirs()`、`delete()`、`createNewFile()`。
+
+示例：在D盘创建目录abc，并在其中创建Hello.txt，存在则删除，不存在则创建。
+
+```java
+File dir = new File("d:\\abc");
+dir.mkdir();
+File f = new File(dir, "Hello.txt");
+if (f.exists()) f.delete();
+else f.createNewFile();
+```
+
+ 6.2.1 写文本文件
+
+使用 `FileWriter` 或 `BufferedWriter`。
+
+- `FileWriter`：直接写字符，构造时可指定是否追加。`write(String)` 方法写入字符串，`close()` 关闭。
+- `BufferedWriter`：带缓冲，提供 `newLine()` 方法写入平台独立换行符。通常包装 `FileWriter`。
+
+示例6-4：使用 `BufferedWriter` 写文件。
+
+```java
+String fileName = "C:/newHello.txt";
+BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+out.write("Hello!");
+out.newLine();
+out.write("This is another text file.");
+out.close();
+```
+
+6.2.2 读文本文件
+
+使用 `FileReader` 和 `BufferedReader`。`BufferedReader` 的 `readLine()` 方法按行读取，返回 `null` 表示文件结束。
+
+示例6-5：读取 `Hello.txt` 并显示。
+
+```java
+String fileName = "C:/Hello.txt";
+BufferedReader in = new BufferedReader(new FileReader(fileName));
+String line;
+while ((line = in.readLine()) != null) {
+    System.out.println(line);
+}
+in.close();
+```
+
+也可用 `Reader` 的 `read()` 逐个字符读取，读到 `-1` 结束。
+
+6.2.3 写二进制文件
+
+二进制文件适合存储非文本数据（如图片、声音、基本类型）。使用 `FileOutputStream`、`BufferedOutputStream`、`DataOutputStream`。
+
+- `FileOutputStream`：打开文件用于写字节。
+- `DataOutputStream`：提供 `writeInt()`、`writeDouble()`、`writeBytes()` 等方法，以与机器无关的格式写入基本类型。
+
+示例6-7：写入三个整数到 `data1.dat`。
+
+```java
+String fileName = "d:/data1.dat";
+DataOutputStream out = new DataOutputStream(new FileOutputStream(fileName));
+out.writeInt(255);
+out.writeInt(0);
+out.writeInt(-1);
+out.close();
+```
+
+示例6-8：演示 `DataOutputStream.size()` 统计写入字节数。
+
+```java
+DataOutputStream dataOut = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("mixedTypes.dat")));
+dataOut.writeInt(0);          // 4 bytes
+dataOut.writeDouble(31.2);    // +8 = 12 bytes
+dataOut.writeBytes("JAVA");   // +4 = 16 bytes
+System.out.println(dataOut.size());
+dataOut.close();
+```
+
+ 6.2.4 读二进制文件
+
+使用 `FileInputStream`、`BufferedInputStream`、`DataInputStream`。`DataInputStream` 提供 `readInt()`、`readDouble()`、`readUnsignedByte()` 等方法。注意：必须知道写入的顺序和类型，才能正确读取。
+
+示例：读取 `data1.dat` 中的三个整数。
+
+```java
+DataInputStream in = new DataInputStream(new FileInputStream("d:/data1.dat"));
+int a = in.readInt();  // 255
+int b = in.readInt();  // 0
+int c = in.readInt();  // -1
+in.close();
+```
+
+6.2.5 随机读写文件
+
+`RandomAccessFile` 支持在文件任意位置读写，实现 `DataInput` 和 `DataOutput` 接口。可设置文件指针位置。
+
+构造方法：`RandomAccessFile(String name, String mode)`，mode为 `"r"`（只读）或 `"rw"`（读写）。  
+常用方法：`seek(long pos)` 移动指针，`getFilePointer()` 获取当前位置，`skipBytes(int n)` 跳过字节。
+
+适用于定长记录文件。示例：雇员信息每条固定20字节（姓名8个字符16字节 + 年龄int 4字节），实现写入、读取指定序号记录。
+
+```java
+// 写入第n条记录
+RandomAccessFile ra = new RandomAccessFile("data.dat", "rw");
+ra.seek(n * 20);
+for (int i = 0; i < 8; i++) ra.writeChar(e.name[i]);
+ra.writeInt(e.age);
+ra.close();
+
+// 读取第n条记录
+ra = new RandomAccessFile("data.dat", "r");
+ra.seek(n * 20);
+char[] buf = new char[8];
+for (int i = 0; i < 8; i++) buf[i] = ra.readChar();
+int age = ra.readInt();
+ra.close();
+```
+
+6.2.6 处理压缩文件
+
+`java.util.zip` 包提供压缩流：`GZIPOutputStream` / `GZIPInputStream`（GZIP格式）和 `ZipOutputStream` / `ZipInputStream`（ZIP格式）。它们继承自字节流，可包装文件流。
+
+示例6-14：将 `Hello.txt` 压缩为 `test.gz`，再解压显示并恢复为 `newHello.txt`。
+
+```java
+// 压缩
+FileInputStream in = new FileInputStream("c:/Hello.txt");
+GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream("c:/test.gz"));
+int c;
+while ((c = in.read()) != -1) out.write(c);
+in.close();
+out.close();
+
+// 解压显示
+BufferedReader in2 = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream("c:/test.gz"))));
+String s;
+while ((s = in2.readLine()) != null) System.out.println(s);
+in2.close();
+```
+
+ 6.2.7 对象序列化
+
+对象序列化将实现了 `Serializable` 接口的对象转换为字节序列，可以保存到文件或通过网络传输，之后反序列化恢复对象。`Serializable` 是一个标记接口，没有方法。
+
+- `ObjectOutputStream`：将对象写入流，`writeObject(Object obj)`。
+- `ObjectInputStream`：从流中读取对象，`readObject()` 返回 `Object`，需要强制转型。
+
+注意：`static` 和 `transient` 修饰的成员不会被序列化。
+
+示例6-17：定义 `Book` 类实现 `Serializable`，将对象写入 `book.dat`，再读取显示。
+
+```java
+class Book implements Serializable {
+    int id; String name; String author; float price;
+    // 构造方法等
+}
+
+// 序列化
+ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("c:/book.dat"));
+oos.writeObject(book);
+oos.close();
+
+// 反序列化
+ObjectInputStream ois = new ObjectInputStream(new FileInputStream("c:/book.dat"));
+Book book2 = (Book) ois.readObject();
+ois.close();
+```
+
+6.3 本章小结
+
+- I/O 流分为字符流（Reader/Writer）和字节流（InputStream/OutputStream），各包含节点流和处理流。
+- 标准输入输出通过 `System.in`、`System.out`、`System.err` 访问。
+- 文件读写：文本文件常用 `FileReader`/`FileWriter` 和 `BufferedReader`/`BufferedWriter`；二进制文件常用 `FileInputStream`/`FileOutputStream` 和 `DataInputStream`/`DataOutputStream`。
+- `RandomAccessFile` 支持随机访问，适用于定长记录文件。
+- `java.util.zip` 提供压缩/解压缩流。
+- 对象序列化通过 `ObjectInputStream`/`ObjectOutputStream` 和 `Serializable` 接口实现对象持久化。
+
+扩展说明
+
+- 字符编码：`InputStreamReader` 和 `OutputStreamWriter` 可以指定字符编码（如 `"UTF-8"`），用于处理不同编码的文本文件。
+- 缓冲流能显著提高读写效率，尤其对大量小 I/O 操作。
+- 异常处理：文件操作应始终处理 `IOException`，使用 try-with-resources（Java 7+）自动关闭流：`try (BufferedReader br = new BufferedReader(...)) { ... }`。
+- 序列化版本号：建议显式声明 `private static final long serialVersionUID` 以便版本兼容。
+- `RandomAccessFile` 不能用于非文件设备（如网络），但可直接操作文件指针，常用于断点续传、数据库等场景。
