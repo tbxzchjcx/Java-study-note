@@ -39,7 +39,7 @@ public class duoxiancheng
                     break;
                 }
 
-                long time = System.nanoTime();   // 改用 nanoTime
+                long time = System.nanoTime();
                 String record = "[" + time + "] " + windowName + " 发出第 " + ticketNum + " 张票";
                 records.add(record);
 
@@ -48,7 +48,7 @@ public class duoxiancheng
                 } 
                 catch (InterruptedException e) 
                 {
-                    e.printStackTrace();
+                    e.printStackTrace();  
                 }
             }
         }

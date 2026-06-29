@@ -1,0 +1,8 @@
+class FileOutIn{
+    private String name;
+    private int length;
+    public FileOutIn(String name, int length){
+        this.name = name;
+        this.length = length;
+    }
+}
